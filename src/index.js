@@ -28,36 +28,29 @@ export const App = () => {
     <F label="F" />,
     <F label="F" fret={[4, 3, 0, -1]} />
   ];
+
   return (
     <ChordContextProvider>
-      {
-        <div style={{ textAlign: "center" }}>
-          {intro1.map((chord, bar) => (
-            <span key={bar}>{chord}</span>
-          ))}
-        </div>
-      }
-      {
-        <div style={{ textAlign: "center" }}>
-          {chorus1.map((chord, bar) => (
-            <span key={bar}>{chord}</span>
-          ))}
-        </div>
-      }
-      {
-        <div style={{ textAlign: "center" }}>
-          {chorus2.map((chord, bar) => (
-            <span key={bar}>{chord}</span>
-          ))}
-        </div>
-      }
-      {
-        <div style={{ textAlign: "center" }}>
-          {outro1.map((chord, bar) => (
-            <span key={bar}>{chord}</span>
-          ))}
-        </div>
-      }
+      <div style={{ textAlign: "center" }}>
+        {intro1.map((chord, bar) => (
+          <span key={bar}>{chord}</span>
+        ))}
+      </div>
+      <div style={{ textAlign: "center" }}>
+        {chorus1.map((chord, bar) => (
+          <span key={bar}>{chord}</span>
+        ))}
+      </div>
+      <div style={{ textAlign: "center" }}>
+        {chorus2.map((chord, bar) => (
+          <span key={bar}>{chord}</span>
+        ))}
+      </div>
+      <div style={{ textAlign: "center" }}>
+        {outro1.map((chord, bar) => (
+          <span key={bar}>{chord}</span>
+        ))}
+      </div>
     </ChordContextProvider>
   );
 };
