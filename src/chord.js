@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { createContext, useContext } from "react";
 import PropTypes from "prop-types";
 
+export const ChordContext = createContext(null);
+
 export const chords = {
   // chord in fret numbers
   A: [2, 1, 0, 0],
@@ -24,6 +26,7 @@ export const chordsInitState = {
   width: 100, // chord width
   height: 150, // chord height
   radius: 6, // dot/cross/circle radius
+  frets: 5, // number of frets per chord
   tunning: ["G", "C", "E", "A"],
   line: { stroke: "black", strokeWidth: 1 },
   cross: {
@@ -36,14 +39,14 @@ export const chordsInitState = {
     stroke: "black",
     strokeWidth: "1",
     fill: "transparent"
-  }
+  },
+  label: { textAlign: "center", fontFamily: "sans-serif" }
 };
 
 export const useChord = () => {
   const [state] = useState(chordsInitState);
-
-  const getChordSize = frets => {
-    const { width, height, padding, tunning } = state;
+  const getChordSize = () => {
+    const { width, height, padding, tunning, frets } = state;
 
     return {
       width, // chord width
@@ -52,11 +55,11 @@ export const useChord = () => {
       h: (height - 2 * padding) / (frets - 1 + 0.5) // fret-fret height
     };
   };
-  const getStrings = frets => {
-    const { w, h, height } = getChordSize(frets);
+  const getStrings = () => {
     const { padding, tunning, line } = state;
+    const { w, h, height } = getChordSize();
     const x = i => i * w;
-
+    console.log({ getStrings: 1, w, h, height, padding, tunning, line });
     return tunning
       .map((note, i) => ({
         note,
@@ -74,9 +77,9 @@ export const useChord = () => {
         y2: note.y2 + padding - h / 6
       }));
   };
-  const getFrets = frets => {
-    const { line, padding } = state;
-    const { width, h } = getChordSize(frets);
+  const getFrets = () => {
+    const { line, padding, frets } = state;
+    const { width, h } = getChordSize();
     const y = i => i * h + h / 3;
 
     return Array(frets)
@@ -111,9 +114,9 @@ export const useChord = () => {
         y2: note.y2 + padding
       }));
   };
-  const getCapo = (capo, frets) => {
-    const { line, padding } = state;
-    const { width, h } = getChordSize(frets);
+  const getCapo = capo => {
+    const { line, padding, frets } = state;
+    const { width, h } = getChordSize();
     const y = (capo - 1 + 0.5) * h + h / 3;
     const style = {
       ...line,
@@ -130,9 +133,9 @@ export const useChord = () => {
       y2: y + padding
     };
   };
-  const getFingerTips = (fret = chords.C6, frets = 5) => {
-    const { tunning, radius, padding } = state;
-    const { w, h } = getChordSize(frets);
+  const getFingerTips = (fret = chords.C6) => {
+    const { tunning, radius, padding, frets } = state;
+    const { w, h } = getChordSize();
     const fingers = fret
       .map((f, i) => {
         const r = radius;
@@ -149,15 +152,13 @@ export const useChord = () => {
   };
   return {
     ...state,
-    getCapo,
-    getStrings,
     getChordSize,
+    getStrings,
     getFrets,
+    getCapo,
     getFingerTips
   };
 };
-
-export const ChordContext = createContext(null);
 
 export const ChordContextProvider = props => {
   const value = useChord();
@@ -168,18 +169,18 @@ export const ChordContextProvider = props => {
   );
 };
 
-export const Strings = ({ frets = 5 }) => {
+export const Strings = props => {
   const { getStrings } = useContext(ChordContext);
-  const verticals = getStrings(frets);
+  const verticals = getStrings();
 
   return verticals.map(({ note, style, x1, y1, x2, y2 }, i) => (
     <line key={note} x1={x1} y1={y1} x2={x2} y2={y2} style={style} />
   ));
 };
 
-export const Frets = ({ frets = 5 }) => {
+export const Frets = props => {
   const { getFrets } = useContext(ChordContext);
-  const horizontals = getFrets(frets);
+  const horizontals = getFrets();
 
   return horizontals.map(({ fret, style, x1, y1, x2, y2 }) => (
     <line key={fret} x1={x1} y1={y1} x2={x2} y2={y2} style={style} />
@@ -188,7 +189,7 @@ export const Frets = ({ frets = 5 }) => {
 
 export const Capo = ({ capo = 0, frets = 5 }) => {
   const { getCapo } = useContext(ChordContext);
-  const { x1, y1, x2, y2, style } = getCapo(capo, frets);
+  const { x1, y1, x2, y2, style } = getCapo(capo);
 
   return <line x1={x1} y1={y1} x2={x2} y2={y2} style={style} />;
 };
@@ -199,6 +200,7 @@ export const Dot = ({ cx, cy, r }) => {
 
 export const Circle = ({ cx, cy, r }) => {
   const { circle } = useContext(ChordContext);
+
   return <circle {...{ cx, cy, r: 0.775 * r }} {...circle} />;
 };
 
@@ -208,12 +210,13 @@ export const Cross = ({ cx, cy, r }) => {
   const y = cy - r / 2;
   const fall = `M ${x},${y} L ${x + r},${y + r}`;
   const raise = `M ${x},${y + r} L ${x + r},${y}`;
+
   return <path d={`${fall} ${raise}`} style={cross} />;
 };
 
 export const FingerTips = ({ fret, frets, capo = 0 }) => {
   const { getFingerTips } = useContext(ChordContext);
-  const FingerTips = getFingerTips(fret, frets);
+  const FingerTips = getFingerTips(fret);
 
   return FingerTips.map(({ key, cx, cy, r, f }) => {
     const has_capo = capo > 0;
@@ -228,24 +231,25 @@ export const FingerTips = ({ fret, frets, capo = 0 }) => {
   });
 };
 
-export const Label = ({ label = null }) => {
-  const style = { textAlign: "center", fontFamily: "sans-serif" };
-  return <div style={style}>{label}</div>;
+export const Label = ({ name = null }) => {
+  const { label } = useContext(ChordContext);
+
+  return <div style={label}>{name}</div>;
 };
 
 export const Chord = ({ fret, capo = 0, frets = 5, label = null }) => {
   const { getChordSize, margin } = useContext(ChordContext);
-  const { width, height } = getChordSize(frets);
+  const { width, height } = getChordSize();
 
   return (
     <div style={{ display: "inline-block", margin }}>
-      <Label label={label} />
+      <Label name={label} />
       <div style={{ width, height }}>
         <svg width={width} height={height}>
-          <Strings frets={frets} />
-          <Frets frets={frets} />
-          <Capo capo={capo} frets={frets} />
-          <FingerTips fret={fret} frets={frets} capo={capo} />
+          <Strings />
+          <Frets />
+          <Capo capo={capo} />
+          <FingerTips fret={fret} capo={capo} />
         </svg>
       </div>
     </div>
