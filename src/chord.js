@@ -59,7 +59,6 @@ export const useChord = () => {
     const { padding, tunning, line } = state;
     const { w, h, height } = getChordSize();
     const x = i => i * w;
-    console.log({ getStrings: 1, w, h, height, padding, tunning, line });
     return tunning
       .map((note, i) => ({
         note,
@@ -115,7 +114,7 @@ export const useChord = () => {
       }));
   };
   const getCapo = capo => {
-    const { line, padding, frets } = state;
+    const { line, padding } = state;
     const { width, h } = getChordSize();
     const y = (capo - 1 + 0.5) * h + h / 3;
     const style = {
@@ -134,7 +133,7 @@ export const useChord = () => {
     };
   };
   const getFingerTips = (fret = chords.C6) => {
-    const { tunning, radius, padding, frets } = state;
+    const { tunning, radius, padding } = state;
     const { w, h } = getChordSize();
     const fingers = fret
       .map((f, i) => {
