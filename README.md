@@ -1,3 +1,3 @@
 React Chord Diagram
 
-![Screen Shot](misc/ScreenShot.png)
+![Screen Shot](misc/ScreenShot2.png)
